@@ -1,0 +1,64 @@
+services:
+  api:
+    build: .
+    container_name: fastapi_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:8100@postgres:5432/finansu
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      SECRET_KEY: supersecretkey
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    container_name: celery_worker
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:8100@postgres:5432/finansu
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      SECRET_KEY: supersecretkey
+    
+    command: celery -A app.background.worker.celery_app worker --loglevel=info
+
+    volumes:
+      - .:/app
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 8100
+      POSTGRES_DB: finansu
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
