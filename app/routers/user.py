@@ -9,7 +9,9 @@ from app.utils.jwt import create_access_token, create_refresh_token
 
 from pydantic import BaseModel,constr
 
-
+import logging
+logging.basicConfig(level=logging.INFO) 
+logger=logging.getLogger(__name__)
 
 router = APIRouter(tags=["Users"])
 
@@ -49,13 +51,15 @@ def register_user(payload: UserRegister, db: Session = Depends(get_db)):
 @router.post("/user-login", response_model=TokenResponse)
 def login_user(payload: UserLogin, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.email == payload.email).first()
+    logger.info(f"user data is {user}")
 
     if not user or not verify_password(payload.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    access_token = create_access_token({"sub": user.email})
-    refresh_token = create_refresh_token({"sub": user.email})
-
+    # access_token = create_access_token({"sub": user.email})
+    # refresh_token = create_refresh_token({"sub": user.email})
+    access_token = create_access_token({"sub": user.email, "user_id": user.id})
+    refresh_token = create_refresh_token({"sub": user.email, "user_id": user.id})
     return {
         "access_token": access_token,
         "refresh_token": refresh_token
