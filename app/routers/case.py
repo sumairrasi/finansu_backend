@@ -32,7 +32,7 @@ def create_company(
         .filter(CaseModel.company_name == payload.company_name)
         .first()
     )
- 
+
     
     if existing_company:
         return {
@@ -55,6 +55,14 @@ def create_company(
         "company_id": company.id
         
     }
+@router.get("/company-list")
+def CompanyList(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)   
+):
+    companies = db.query(CaseModel).filter(CaseModel.user_id == current_user.get('user_id')).all()
+    # return [{"company_id": company.id, "company_name": company.company_name, "product_name": company.product_name} for company in companies]
+    return {"companies": companies}
 
 
    
