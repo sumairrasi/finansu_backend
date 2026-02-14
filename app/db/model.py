@@ -23,6 +23,7 @@ class CaseModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     company_name = Column(String, nullable=False,unique=True)
+    product_name = Column(String, nullable=False)
 
     user = relationship("UserModel", back_populates="cases")
     documents = relationship("DocumentModel", back_populates="case")

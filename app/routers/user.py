@@ -53,8 +53,8 @@ def login_user(payload: UserLogin, db: Session = Depends(get_db)):
     if not user or not verify_password(payload.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    access_token = create_access_token({"sub": user.email})
-    refresh_token = create_refresh_token({"sub": user.email})
+    access_token = create_access_token({"sub": user.email, "user_id": user.id})
+    refresh_token = create_refresh_token({"sub": user.email, "user_id": user.id})
 
     return {
         "access_token": access_token,
