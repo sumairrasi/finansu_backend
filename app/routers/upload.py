@@ -23,6 +23,8 @@ def upload(case_id:int=Form(...),current_user=Depends(get_current_user), db: Ses
     user_id=current_user.get("user_id")
     path=f"{upload_dir}/{user_id}/{case_id}"
 
+
+
     file_path=[]
     for file in files:
 
@@ -33,6 +35,20 @@ def upload(case_id:int=Form(...),current_user=Depends(get_current_user), db: Ses
         # logger.info(f"the file type is {file_type}")
 
         saved_path=save_file(path,file)
+
+        existed_file_path = (
+    db.query(DocumentModel)
+    .filter(
+        DocumentModel.file_path == saved_path,
+        DocumentModel.user_id == user_id,
+        DocumentModel.case_id == case_id
+    )
+    .first()
+)
+
+        if existed_file_path:
+            return {"message": "file is already exit for this company"}
+
         file_path.append(saved_path) #list store the file path of all files 
 
         data=DocumentModel(

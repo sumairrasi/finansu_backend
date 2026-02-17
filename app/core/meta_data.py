@@ -94,7 +94,21 @@ class EmriteMetada(BaseModel):
 #vat
 
 class VatMetadata(BaseModel):
-    total:str=Field(...,description="Extract the Total VAT Amount (AED) from 11th point")
+    total:str=Field(...,description="""
+
+Extract ONLY the VAT Amount (AED) from row '11 Totals' inside the table
+'VAT on Expenses and All Other Inputs'.
+
+Rules:
+- Must come from the row starting with '11 Totals'.
+- Must be the value under column 'VAT Amount (AED)'.
+- Ignore point 8 totals.
+- Ignore Net VAT Due section (points 12, 13, 14).
+- Ignore payable tax (point 14).
+Return only the number.
+
+
+""")
     quater:str=Field(...,description="extract the which VAT Stagger")
 
 
