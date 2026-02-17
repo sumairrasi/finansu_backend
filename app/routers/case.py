@@ -27,9 +27,10 @@ def create_company(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)   
 ):
+    user_id=current_user.get('user_id')
     existing_company = (
         db.query(CaseModel)
-        .filter(CaseModel.company_name == payload.company_name)
+        .filter(CaseModel.company_name == payload.company_name,CaseModel.user_id == user_id)
         .first()
     )
 

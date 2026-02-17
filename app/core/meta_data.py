@@ -1,7 +1,7 @@
-from pydantic import BaseModel,Field,computed_field
+from pydantic import BaseModel,Field,computed_field,field_validator
 from typing import List
 from datetime import date,datetime
-
+from app.core.document_type import llm
 
 # class TradeLicenceMetadata(BaseModel):
 #     name : str =Field(..., description="Extract the name of the company given in the document")
@@ -57,12 +57,34 @@ class TradeLicenceMetadata(BaseModel):
 #emrite_id
 
 
+# class EmriteMetada(BaseModel):
+#     nationality: str = Field(..., description="Extract the nationality from the image")
+
+#     date_of_birth: date = Field(
+#         ..., description="Extract the Date of birth in YYYY-MM-DD format"
+#     )
+
+#     @computed_field
+#     @property
+#     def age(self) -> int:
+#         return datetime.now().year - self.date_of_birth.year
+
 class EmriteMetada(BaseModel):
     nationality: str = Field(..., description="Extract the nationality from the image")
 
     date_of_birth: date = Field(
-        ..., description="Extract the date of birth from the emirates ID"
+        ..., description="Extract the Date of birth in YYYY-MM-DD format"
     )
+
+    @field_validator("date_of_birth", mode="before")
+    def parse_dob(cls, v):
+        if isinstance(v, str):
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
+                try:
+                    return datetime.strptime(v, fmt).date()
+                except ValueError:
+                    pass
+        return v
 
     @computed_field
     @property
@@ -74,3 +96,8 @@ class EmriteMetada(BaseModel):
 class VatMetadata(BaseModel):
     total:str=Field(...,description="Extract the Total VAT Amount (AED) from 11th point")
     quater:str=Field(...,description="extract the which VAT Stagger")
+
+
+emrite_meta=llm.with_structured_output(EmriteMetada)
+trade_meta=llm.with_structured_output(TradeLicenceMetadata)
+vat_meta=llm.with_structured_output(VatMetadata)

@@ -19,10 +19,12 @@ async def task_progress(websocket: WebSocket, task_id: str):
                 "percentage": 0
             })
 
-        elif task_result.state == "PROGRESS":
+        # elif task_result.state == "PROGRESS":
+        elif task_result.state == "Extracting":
+        
             meta = task_result.info or {}
             await websocket.send_json({
-                "state": "PROGRESS",
+                "state": "Extracting",
                 "percentage": meta.get("percentage", 0),
                 "current": meta.get("current", 0),
                 "total": meta.get("total", 0),

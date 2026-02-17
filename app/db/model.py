@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey,JSON
+from sqlalchemy import Column, Integer, String, ForeignKey,JSON,UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -19,10 +19,13 @@ class UserModel(Base):
 
 class CaseModel(Base):
     __tablename__ = "cases"
+    __table_args__ = (
+        UniqueConstraint("user_id", "company_name", name="uq_user_company"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    company_name = Column(String, nullable=False,unique=True)
+    company_name = Column(String, nullable=False)
     product_name = Column(String, nullable=False)
 
     user = relationship("UserModel", back_populates="cases")
@@ -32,6 +35,10 @@ class CaseModel(Base):
 
 class DocumentModel(Base):
     __tablename__ = "documents"
+    __table_args__ = (
+    UniqueConstraint("user_id", "case_id", "file_path", name="unique_document"),
+)
+
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -49,6 +56,7 @@ class ResultModel(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     case_id = Column(Integer, ForeignKey("cases.id"), nullable=False)
     doc_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
+    document_type=Column(String,nullable=True)
     result_json=Column(JSON, nullable=False)
     user = relationship("UserModel", back_populates="results")
     case = relationship("CaseModel", back_populates="results")
